@@ -11,25 +11,25 @@ const port = process.env.PORT || 5000;
 
 //middleware
 app.use(cors({
-    origin: [
-        'http://localhost:5000',
-        'http://localhost:5173',
-        'https://worldinsight.netlify.app'
-    ],
-    credentials: true,
-    optionsSuccessStatus: 200,
+  origin: [
+    // 'http://localhost:5000',
+    'http://localhost:5173',
+    'https://worldinsight.netlify.app'
+  ],
+  credentials: true,
+  optionsSuccessStatus: 200,
 }));
 app.use(express.json());
 
 
 //routes
 app.get('/', (req, res) => {
-    res.send('Server is running');
-  });
-  
-  app.listen(port, () => {
-    console.log(`Server listening on port: ${port}`);
-  });
+  res.send('Server is running');
+});
+
+app.listen(port, () => {
+  console.log(`Server listening on port: ${port}`);
+});
 
 
 //connection to mongodb
@@ -49,6 +49,38 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     // await client.connect();
+
+    // DB Collections Connection
+    const blogsCollection = client.db("wordinsightDB").collection("blogs");
+    const commentsCollection = client.db("wordinsightDB").collection("comments");
+    const wishlistsCollection = client.db("wordinsightDB").collection("wishlists");
+
+
+    // Get all data from blogs
+    app.get('/allBlogs', async (req, res) => {
+      const cursor = blogsCollection.find();
+      const results = await cursor.toArray();
+      res.send(results);
+    })
+
+    //  Get blog details data by id
+    app.get('/allBlogs/:id', async (req, res) => {
+      // console.log(req.params.id);
+      const id = req.params.id;
+      const results = await blogsCollection.findOne({ _id: new ObjectId(id) });
+      // console.log(results);
+      res.send(results);
+    });
+
+    // Post data for add blog
+    app.post('/addBlog', async (req, res) => {
+      const newBlog = req.body;
+      console.log(newBlog);
+      const result = await blogsCollection.insertOne(newBlog);
+      res.send(result);
+    })
+
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
