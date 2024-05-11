@@ -80,6 +80,47 @@ async function run() {
       res.send(result);
     })
 
+    // Get all data from wishlist
+    app.get('/allWishlists', async (req, res) => {
+      const cursor = wishlistsCollection.find();
+      const results = await cursor.toArray();
+      res.send(results);
+    })
+
+    
+    //  Get data by email holder from wishlists collection
+    app.get('/allWishlists/:email', async (req, res) => {
+      // console.log(req.params.email);
+      const mail = req.params.email;
+      const results = await wishlistsCollection.find({ userMail: mail }).toArray();
+      res.send(results);
+    });
+
+    //  Get data by name holder from wishlists collection
+    app.get('/allWishlist/:name', async (req, res) => {
+      // console.log(req?.params?.name);
+      const name = req?.params?.name;
+      const results = await wishlistsCollection.find({ userName: name }).toArray();
+      // console.log(results)
+      res.send(results);
+    });
+
+    // Post data for add wish list
+    app.post('/addWishlist', async (req, res) => {
+      const newBlog = req.body;
+      // console.log(newBlog);
+      const result = await wishlistsCollection.insertOne(newBlog);
+      res.send(result);
+    })
+
+    // delete wishlist data
+    app.delete('/deleteWishlist/:id', async (req, res) => {
+      const id = req.params.id;
+      const result = await wishlistsCollection.deleteOne({ _id: new ObjectId(id) });
+      // console.log(result);
+      res.send(result);
+    });
+
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
