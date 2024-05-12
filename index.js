@@ -62,13 +62,28 @@ async function run() {
       const results = await cursor.toArray();
       res.send(results);
     })
-
+    
     //  Get blog details data by id
     app.get('/allBlogs/:id', async (req, res) => {
       // console.log(req.params.id);
       const id = req.params.id;
       const results = await blogsCollection.findOne({ _id: new ObjectId(id) });
       // console.log(results);
+      res.send(results);
+    });
+
+
+    //  Get data by email holder from blogs
+    app.get('/allblogs/:email', async (req, res) => {
+      const mail = req.params?.email;
+      const results = await blogsCollection.find({ email: mail }).toArray();
+      res.send(results);
+    });
+
+    //  Get data by name holder from blogs
+    app.get('/allBlog/:name', async (req, res) => {
+      const name = req?.params?.name;
+      const results = await blogsCollection.find({ name: name }).toArray();
       res.send(results);
     });
 
@@ -79,6 +94,23 @@ async function run() {
       const result = await blogsCollection.insertOne(newBlog);
       res.send(result);
     })
+
+    // update blog data by id 
+    app.put('/update/:id', async (req, res) => {
+      // console.log(req.params);
+      const id = req.params.id;
+      const request = req.body;
+      const query = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const data = {
+        $set: {
+          ...request,
+        }
+      }
+      const result = await blogsCollection.updateOne(query, data, options);
+      // console.log(result);
+      res.send(result);
+    });
 
     // Get all data from wishlist
     app.get('/allWishlists', async (req, res) => {
