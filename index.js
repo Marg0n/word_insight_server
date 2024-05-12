@@ -12,7 +12,6 @@ const port = process.env.PORT || 5000;
 //middleware
 app.use(cors({
   origin: [
-    // 'http://localhost:5000',
     'http://localhost:5173',
     'https://worldinsight.netlify.app'
   ],
