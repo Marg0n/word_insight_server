@@ -73,7 +73,7 @@ async function run() {
 
 
     //  Get data by email holder from blogs
-    app.get('/allblogs/:email', async (req, res) => {
+    app.get('/all_Blogs/:email', async (req, res) => {
       const mail = req.params?.email;
       const results = await blogsCollection.find({ email: mail }).toArray();
       res.send(results);
@@ -89,7 +89,7 @@ async function run() {
     // Post data for add blog
     app.post('/addBlog', async (req, res) => {
       const newBlog = req.body;
-      console.log(newBlog);
+      // console.log(newBlog);
       const result = await blogsCollection.insertOne(newBlog);
       res.send(result);
     })
@@ -151,6 +151,21 @@ async function run() {
       // console.log(result);
       res.send(result);
     });
+
+    // Post data for add a comment
+    app.post('/addComment', async (req, res) => {
+      const comment = req.body;
+      // console.log(comment);
+      const result = await commentsCollection.insertOne(comment);
+      res.send(result);
+    })
+
+    // Get all data from comments
+    app.get('/getComments', async (req, res) => {
+      const cursor = commentsCollection.find();
+      const results = await cursor.toArray();
+      res.send(results);
+    })
 
 
     // Send a ping to confirm a successful connection
