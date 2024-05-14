@@ -1,5 +1,7 @@
 const express = require('express');
 const cors = require('cors');
+const jwt = require('jsonwebtoken');
+const cookieParser = require('cookie-parser');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 
@@ -19,6 +21,7 @@ app.use(cors({
   optionsSuccessStatus: 200,
 }));
 app.use(express.json());
+app.use(cookieParser());
 
 
 //routes
@@ -54,14 +57,28 @@ async function run() {
     const commentsCollection = client.db("wordinsightDB").collection("comments");
     const wishlistsCollection = client.db("wordinsightDB").collection("wishlists");
 
+    // jwt Authentication
+    app.post('/jwt', async (req, res) => {
+      const user = req.body;
+      // console.log(user)
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN, { expiresIn: '7d' });
+      res
+        .cookie('token', token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+        })
+        .send({ success: true });
+    })
 
     // Get all data from blogs
     app.get('/allBlogs', async (req, res) => {
       const cursor = blogsCollection.find();
       const results = await cursor.toArray();
-      res.send(results);
+      res
+        .send(results);
     })
-    
+
     //  Get blog details data by id
     app.get('/allBlogs/:id', async (req, res) => {
       // console.log(req.params.id);
@@ -118,7 +135,7 @@ async function run() {
       res.send(results);
     })
 
-    
+
     //  Get data by email holder from wishlists collection
     app.get('/allWishlists/:email', async (req, res) => {
       // console.log(req.params.email);
