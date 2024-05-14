@@ -71,6 +71,18 @@ async function run() {
         .send({ success: true });
     })
 
+    // jwt cookie cleanup on logout
+    app.get('/logout', async (req, res) => {
+      res
+        .clearCookie('token', {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+          maxAge: 0,
+        })
+        .send({ success: true });
+    });
+
     // Get all data from blogs
     app.get('/allBlogs', async (req, res) => {
       const cursor = blogsCollection.find();
