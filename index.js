@@ -24,6 +24,8 @@ app.use(express.json());
 app.use(cookieParser());
 
 // jwt validation middleware
+// const cookieDomain = process.env.NODE_ENV === 'production' ? 'worldinsight.netlify.app' : 'localhost';
+
 const verifyToken = (req, res, next) => {
 
   const token = req?.cookies?.token;
@@ -95,12 +97,14 @@ async function run() {
     })
 
     // jwt cookie cleanup on logout
-    app.get('/logout', async (req, res) => {
+    app.get('/logout', (req, res) => {
       res
         .clearCookie('token', {
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
           sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+          // path: '/',
+          // domain: cookieDomain,
           maxAge: 0,
         })
         .send({ success: true });
@@ -108,14 +112,38 @@ async function run() {
 
     // Get all data from blogs
     app.get('/allBlogs', async (req, res) => {
+      // const filter = req.query.filter
+      // const search = req.query.search
+      // let query = {
+      //   title: {$regex: search, $options: 'i'},
+      // }
+      // // if (filter) query = { ...query, category: filter}
+      // if (filter) query.category =  filter
+
       const cursor = blogsCollection.find();
       const results = await cursor.toArray();
       res
         .send(results);
     })
 
+    // Get all data from blog by categories and search
+    app.get('/all_Blogs', async (req, res) => {
+      const filter = req.query.filter
+      const search = req.query.search
+      let query = {
+        title: {$regex: search, $options: 'i'},
+      }
+      // if (filter) query = { ...query, category: filter}
+      if (filter) query.category =  filter
+
+      const cursor = blogsCollection.find(query);
+      const results = await cursor.toArray();
+      res
+        .send(results);
+    })
+
     //  Get blog details data by id
-    app.get('/allBlogs/:id', verifyToken, async (req, res) => {      
+    app.get('/allBlogs/:id', verifyToken, async (req, res) => {
       // console.log(req.params.id);
       const id = req.params.id;
       const results = await blogsCollection.findOne({ _id: new ObjectId(id) });
@@ -186,7 +214,7 @@ async function run() {
     });
 
     // Get all data from wishlist with jwt
-    app.get('/allWishlists', verifyToken,  async (req, res) => {
+    app.get('/allWishlists', verifyToken, async (req, res) => {
       const cursor = wishlistsCollection.find();
       const results = await cursor.toArray();
       res.send(results);
