@@ -25,17 +25,20 @@ app.use(cookieParser());
 
 // jwt validation middleware
 const verifyToken = (req, res, next) => {
+
   const token = req.cookies?.token;
+
   if (!token) {
-    res.status(401).send({ message: 'unauthorized access' });
+    return res.status(401).send({ message: 'Unauthorized access' });
   }
+
   if (token) {
     jwt.verify(token, process.env.ACCESS_TOKEN, (err, decoded) => {
       if (err) {
         console.log(err)
-        return res.status(401).send({ message: 'unauthorized access' });
+        return res.status(401).send({ message: 'Unauthorized access' });
       }
-      console.log(decoded)
+      // console.log(decoded)
       req.user = decoded
       next()
     })
@@ -103,7 +106,7 @@ async function run() {
     });
 
     // Get all data from blogs
-    app.get('/allBlogs', async (req, res) => {
+    app.get('/allBlogs', verifyToken, async (req, res) => {
       const cursor = blogsCollection.find();
       const results = await cursor.toArray();
       res
@@ -111,7 +114,7 @@ async function run() {
     })
 
     //  Get blog details data by id
-    app.get('/allBlogs/:id', async (req, res) => {      
+    app.get('/allBlogs/:id', verifyToken, async (req, res) => {      
       // console.log(req.params.id);
       const id = req.params.id;
       const results = await blogsCollection.findOne({ _id: new ObjectId(id) });
@@ -120,7 +123,7 @@ async function run() {
     });
 
 
-    //  Get data by email holder from blogs
+    //  Get data by email holder from blogs with jwt token
     app.get('/all_Blogs/:email', verifyToken, async (req, res) => {
       // jwt token
       const tokenData = req.user
@@ -138,7 +141,7 @@ async function run() {
       res.send(results);
     });
 
-    //  Get data by name holder from blogs
+    //  Get data by name holder from blogs with jwt token
     app.get('/allBlog/:name', verifyToken, async (req, res) => {
       // jwt token
       const tokenData = req.user
@@ -165,7 +168,7 @@ async function run() {
     })
 
     // update blog data by id 
-    app.put('/update/:id', async (req, res) => {
+    app.put('/update/:id', verifyToken, async (req, res) => {
       // console.log(req.params);
       const id = req.params.id;
       const request = req.body;
@@ -181,24 +184,24 @@ async function run() {
       res.send(result);
     });
 
-    // Get all data from wishlist
-    app.get('/allWishlists', async (req, res) => {
+    // Get all data from wishlist with jwt
+    app.get('/allWishlists', verifyToken,  async (req, res) => {
       const cursor = wishlistsCollection.find();
       const results = await cursor.toArray();
       res.send(results);
     })
 
 
-    //  Get data by email holder from wishlists collection
-    app.get('/allWishlists/:email', async (req, res) => {
+    //  Get data by email holder from wishlists collection with jwt
+    app.get('/allWishlists/:email', verifyToken, async (req, res) => {
       // console.log(req.params.email);
       const mail = req.params.email;
       const results = await wishlistsCollection.find({ userMail: mail }).toArray();
       res.send(results);
     });
 
-    //  Get data by name holder from wishlists collection
-    app.get('/allWishlist/:name', async (req, res) => {
+    //  Get data by name holder from wishlists collection with jwt
+    app.get('/allWishlist/:name', verifyToken, async (req, res) => {
       // console.log(req?.params?.name);
       const name = req?.params?.name;
       const results = await wishlistsCollection.find({ userName: name }).toArray();
@@ -230,11 +233,19 @@ async function run() {
       res.send(result);
     })
 
-    // Get all data from comments
-    app.get('/getComments', async (req, res) => {
-      const cursor = commentsCollection.find();
-      const results = await cursor.toArray();
-      res.send(results);
+    // Get all data from comments with jwt token
+    app.get('/getComments', verifyToken, async (req, res) => {
+      // const cursor = commentsCollection.find();
+      // const results = await cursor.toArray();
+      // res.send(results);
+      try {
+        const cursor = commentsCollection.find();
+        const results = await cursor.toArray();
+        res.send(results);
+      } catch (error) {
+        console.error('Error fetching comments:', error);
+        res.status(500).send({ message: 'Internal server error' });
+      }
     })
 
 
