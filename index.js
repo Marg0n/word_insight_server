@@ -26,10 +26,11 @@ app.use(cookieParser());
 // jwt validation middleware
 const verifyToken = (req, res, next) => {
 
-  const token = req.cookies?.token;
+  const token = req?.cookies?.token;
+  // console.log(token)
 
   if (!token) {
-    return res.status(401).send({ message: 'Unauthorized access' });
+    return res.status(401).send({ message: 'Unauthorized access...' });
   }
 
   if (token) {
@@ -106,7 +107,7 @@ async function run() {
     });
 
     // Get all data from blogs
-    app.get('/allBlogs', verifyToken, async (req, res) => {
+    app.get('/allBlogs', async (req, res) => {
       const cursor = blogsCollection.find();
       const results = await cursor.toArray();
       res
@@ -126,17 +127,17 @@ async function run() {
     //  Get data by email holder from blogs with jwt token
     app.get('/all_Blogs/:email', verifyToken, async (req, res) => {
       // jwt token
-      const tokenData = req.user
-      // console.log(tokenData,'from token');
-      const mail = req?.params?.email;
-      // console.log(mail, 'jwt 403');
+      // const tokenData = req.user
+      // // console.log(tokenData,'from token');
+      // const mail = req?.params?.email;
+      // // console.log(mail, 'jwt 403');
 
-      if (tokenData !== mail) {
-        return res.status(403).send({ message: 'forbidden access' });
-      }
+      // if (tokenData !== mail) {
+      //   return res.status(403).send({ message: 'forbidden access' });
+      // }
 
       // data find
-      // const mail = req.params?.email;
+      const mail = req.params?.email;
       const results = await blogsCollection.find({ email: mail }).toArray();
       res.send(results);
     });
@@ -144,17 +145,17 @@ async function run() {
     //  Get data by name holder from blogs with jwt token
     app.get('/allBlog/:name', verifyToken, async (req, res) => {
       // jwt token
-      const tokenData = req.user
-      // console.log(tokenData,'from token');
-      const name = req?.params?.name;
-      // console.log( name, 'jwt 403');
+      // const tokenData = req.user
+      // // console.log(tokenData,'from token');
+      // const name = req?.params?.name;
+      // // console.log( name, 'jwt 403');
 
-      if (tokenData !== name) {
-        return res.status(403).send({ message: 'forbidden access' });
-      }
+      // if (tokenData !== name) {
+      //   return res.status(403).send({ message: 'forbidden access' });
+      // }
 
       // data find
-      // const name = req?.params?.name;
+      const name = req?.params?.name;
       const results = await blogsCollection.find({ name: name }).toArray();
       res.send(results);
     });
@@ -168,7 +169,7 @@ async function run() {
     })
 
     // update blog data by id 
-    app.put('/update/:id', verifyToken, async (req, res) => {
+    app.put('/update/:id', async (req, res) => {
       // console.log(req.params);
       const id = req.params.id;
       const request = req.body;
@@ -195,13 +196,13 @@ async function run() {
     //  Get data by email holder from wishlists collection with jwt
     app.get('/allWishlists/:email', verifyToken, async (req, res) => {
       // console.log(req.params.email);
-      const mail = req.params.email;
+      const mail = req.params?.email;
       const results = await wishlistsCollection.find({ userMail: mail }).toArray();
       res.send(results);
     });
 
     //  Get data by name holder from wishlists collection with jwt
-    app.get('/allWishlist/:name', verifyToken, async (req, res) => {
+    app.get('/all_Wishlist/:name', verifyToken, async (req, res) => {
       // console.log(req?.params?.name);
       const name = req?.params?.name;
       const results = await wishlistsCollection.find({ userName: name }).toArray();
