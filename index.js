@@ -23,6 +23,25 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser());
 
+// jwt validation middleware
+const verifyToken = (req, res, next) => {
+  const token = req.cookies?.token;
+  if (!token) {
+    res.status(401).send({ message: 'unauthorized access' });
+  }
+  if (token) {
+    jwt.verify(token, process.env.ACCESS_TOKEN, (err, decoded) => {
+      if (err) {
+        console.log(err)
+        return res.status(401).send({ message: 'unauthorized access' });
+      }
+      console.log(decoded)
+      req.user = decoded
+      next()
+    })
+  }
+}
+
 
 //routes
 app.get('/', (req, res) => {
@@ -92,7 +111,7 @@ async function run() {
     })
 
     //  Get blog details data by id
-    app.get('/allBlogs/:id', async (req, res) => {
+    app.get('/allBlogs/:id', async (req, res) => {      
       // console.log(req.params.id);
       const id = req.params.id;
       const results = await blogsCollection.findOne({ _id: new ObjectId(id) });
@@ -102,15 +121,37 @@ async function run() {
 
 
     //  Get data by email holder from blogs
-    app.get('/all_Blogs/:email', async (req, res) => {
-      const mail = req.params?.email;
+    app.get('/all_Blogs/:email', verifyToken, async (req, res) => {
+      // jwt token
+      const tokenData = req.user
+      // console.log(tokenData,'from token');
+      const mail = req?.params?.email;
+      // console.log(mail, 'jwt 403');
+
+      if (tokenData !== mail) {
+        return res.status(403).send({ message: 'forbidden access' });
+      }
+
+      // data find
+      // const mail = req.params?.email;
       const results = await blogsCollection.find({ email: mail }).toArray();
       res.send(results);
     });
 
     //  Get data by name holder from blogs
-    app.get('/allBlog/:name', async (req, res) => {
+    app.get('/allBlog/:name', verifyToken, async (req, res) => {
+      // jwt token
+      const tokenData = req.user
+      // console.log(tokenData,'from token');
       const name = req?.params?.name;
+      // console.log( name, 'jwt 403');
+
+      if (tokenData !== name) {
+        return res.status(403).send({ message: 'forbidden access' });
+      }
+
+      // data find
+      // const name = req?.params?.name;
       const results = await blogsCollection.find({ name: name }).toArray();
       res.send(results);
     });
